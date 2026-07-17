@@ -1,0 +1,26 @@
+# CMake and compiled artifacts
+**/build/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+CTestTestfile.cmake
+Makefile
+*.a
+*.o
+*.obj
+*.exe
+
+# Solver outputs
+results/
+outputs/
+*.ite
+*.lfp
+*.pth
+
+# Python and editor artifacts
+__pycache__/
+*.py[cod]
+.vscode/
+.idea/
+*~

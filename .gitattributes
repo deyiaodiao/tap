@@ -1,0 +1,9 @@
+# Preserve the frozen algorithm files byte-for-byte.
+chen2020_cpu/CMakeLists.txt -text
+chen2020_cpu/src/** -text
+chen2020_cpu/include/** -text
+chen2020_cpu/tests/*.cpp -text
+
+# Normalize publication documentation.
+*.md text eol=lf
+*.json text eol=lf

@@ -1,0 +1,45 @@
+{
+  "freeze_id": "chen2020-pbcd-20260717",
+  "frozen_at": "2026-07-17T12:35:37+08:00",
+  "status": "frozen_read_only_algorithm_baseline",
+  "publication_copy": {
+    "added": [
+      "include/newran.h",
+      "include/include.h",
+      "include/boolean.h",
+      "include/myexcept.h",
+      "include/extreal.h",
+      "include/randlib/tnm_header.h"
+    ],
+    "added_reason": "Case-sensitive Linux forwarding headers for frozen uppercase NEWRAN filenames; no frozen file was modified.",
+    "excluded": [
+      "build/**",
+      "**/__pycache__/**",
+      "**/*.pyc",
+      "tests/test_source_boundary.py"
+    ],
+    "reason": "Exclude local build artifacts and an internal workspace-boundary test that requires the non-public frozen Greedy tree."
+  },
+  "algorithm_core_tree": {
+    "scope": "The 28 canonical files: CMakeLists.txt, src/**, frozen include/**, tests/*.cpp; excludes the six publication-only forwarding headers",
+    "file_count": 28,
+    "bytes": 250447,
+    "sha256": "8186fcc475e7eed8df8fa7b4dace592badd51ad41fcbc28ec140a826288321eb",
+    "canonical_and_publication_copy_match": true
+  },
+  "canonical_source_tree": {
+    "scope": "original chen2020_cpu excluding build, __pycache__, and pyc",
+    "file_count": 30,
+    "bytes": 254568,
+    "sha256": "658e3a2dfc334121cc1225b1046da28e85fb191da841ecc137c46bbd5fba0cb9"
+  },
+  "frozen_binary": {
+    "relative_path": "build/bin/chen2020_ue",
+    "sha256": "f7d5954e35fe4c5cb28acbef08e57adbe8366da054595833e73ef29fee56cb87",
+    "included_in_repository": false
+  },
+  "formal_protocol": {
+    "id": "chen2020-formal-v1",
+    "sha256": "cd66b057940760121c395c721977b78afc49eb45d3bc815099054250cd30690b"
+  }
+}
