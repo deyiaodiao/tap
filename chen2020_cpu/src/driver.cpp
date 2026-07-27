@@ -29,6 +29,8 @@ struct Options
     std::size_t odPerBlock = 128;
     int maxInner = 1000;
     int fullCheckFrequency = 100;
+    PBCDODScreeningMode odScreening = PBCDODScreeningMode::RelativeGap;
+    bool traceInner = false;
     double costScalar = 60.0;
     bool alphaSet = false;
     bool betaSet = false;
@@ -65,6 +67,8 @@ void Usage(const char* executable)
         << "  --od-per-block N\n"
         << "  --max-inner N\n"
         << "  --full-check-frequency N\n"
+        << "  --od-screening relative-gap|flow-shift\n"
+        << "  --trace-inner 0|1\n"
         << "  --cost-scalar X\n"
         << "  --load-only 0|1\n"
         << "  --initialize-only 0|1\n"
@@ -96,6 +100,18 @@ Options ParseOptions(int argc, char* argv[], int first)
         else if (name == "--max-inner") options.maxInner = std::stoi(value);
         else if (name == "--full-check-frequency")
             options.fullCheckFrequency = std::stoi(value);
+        else if (name == "--od-screening")
+        {
+            if (value == "relative-gap")
+                options.odScreening = PBCDODScreeningMode::RelativeGap;
+            else if (value == "flow-shift")
+                options.odScreening = PBCDODScreeningMode::MaximumGPFlowShift;
+            else
+                throw std::invalid_argument(
+                    "--od-screening must be relative-gap or flow-shift");
+        }
+        else if (name == "--trace-inner")
+            options.traceInner = std::stoi(value) != 0;
         else if (name == "--cost-scalar") options.costScalar = std::stod(value);
         else if (name == "--load-only") options.loadOnly = std::stoi(value) != 0;
         else if (name == "--initialize-only")
@@ -169,6 +185,8 @@ int main(int argc, char* argv[])
         solver.SetODPerBlock(options.odPerBlock);
         solver.SetMaxInnerIterations(options.maxInner);
         solver.SetFullCheckFrequency(options.fullCheckFrequency);
+        solver.SetODScreeningMode(options.odScreening);
+        solver.SetTraceInner(options.traceInner);
         if (options.alphaSet)
             solver.SetUniformBPR(options.bprAlpha, options.bprBeta);
 

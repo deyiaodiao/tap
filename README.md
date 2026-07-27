@@ -4,9 +4,13 @@
 
 ## 项目
 
-- [`chen2020_cpu/`](chen2020_cpu/)：Chen et al. (2020) 路径型梯度投影用户均衡配流算法的 CPU 并行 PBCD 复现。
+- [`chen2020_cpu/`](chen2020_cpu/)：Chen et al. (2020) 路径型梯度投影
+  用户均衡配流算法的 CPU 并行 PBCD 复现。当前冻结基线为
+  `pbcd-rgod-baseline-v2`（2026-07-27），OD 筛选采用论文所写的
+  `RG_od >= maxODGap`。
 
-后续成果将作为与 `chen2020_cpu/` 并列的一级目录加入本仓库。
+旧 PBCD 基线已经由当前版本覆盖，但仍可通过 Git 历史追溯。后续成果
+将作为与 `chen2020_cpu/` 并列的一级目录加入本仓库。
 
 ## 数据
 

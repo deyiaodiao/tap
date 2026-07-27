@@ -58,6 +58,8 @@ TAP_PBCD::TAP_PBCD()
       m_odPerBlock(128),
       m_maxInnerIterations(1000),
       m_fullCheckFrequency(100),
+      m_odScreeningMode(PBCDODScreeningMode::RelativeGap),
+      m_traceInner(false),
       m_overrideBPR(false),
       m_bprAlpha(0.15),
       m_bprBeta(4.0),
@@ -97,6 +99,16 @@ void TAP_PBCD::SetFullCheckFrequency(int value)
 {
     if (value < 1) throw std::invalid_argument("full check frequency must be positive");
     m_fullCheckFrequency = value;
+}
+
+void TAP_PBCD::SetODScreeningMode(PBCDODScreeningMode value)
+{
+    m_odScreeningMode = value;
+}
+
+void TAP_PBCD::SetTraceInner(bool value)
+{
+    m_traceInner = value;
 }
 
 void TAP_PBCD::SetUniformBPR(double alpha, double beta)
@@ -147,6 +159,15 @@ std::vector<std::vector<std::size_t>> TAP_PBCD::BuildConstantDistanceBlocks(
             blocks.back().push_back(index);
     }
     return blocks;
+}
+
+double TAP_PBCD::ComputeODRelativeGap(
+    double demand,
+    double shortestPathCost,
+    double usedPathTotalCost)
+{
+    if (!(usedPathTotalCost > 0.0)) return 0.0;
+    return std::abs(1.0 - demand * shortestPathCost / usedPathTotalCost);
 }
 
 void TAP_PBCD::FilterIntrazonalDemand()
@@ -456,6 +477,7 @@ void TAP_PBCD::AdjustOneOD(
     result.linkDeltas.clear();
     result.absolutePathFlowChange = 0.0;
     result.maximumPathFlowShift = 0.0;
+    result.odRelativeGap = 0.0;
     result.adjusted = false;
     result.taskSeconds = 0.0;
     TNM_SDEST* destination = m_odPairs[odIndex].destination;
@@ -482,6 +504,22 @@ void TAP_PBCD::AdjustOneOD(
     }
     TNM_SPATH* shortest = destination->pathSet[shortestIndex];
 
+    double usedPathTotalCost = 0.0;
+    for (const TNM_SPATH* path : destination->pathSet)
+        usedPathTotalCost +=
+            static_cast<double>(path->flow) * static_cast<double>(path->cost);
+    result.odRelativeGap = ComputeODRelativeGap(
+        destination->assDemand,
+        shortestCost,
+        usedPathTotalCost);
+    if (m_odScreeningMode == PBCDODScreeningMode::RelativeGap
+        && result.odRelativeGap < maximumODGap)
+    {
+        destination->shiftFlow = 0.0;
+        result.taskSeconds = omp_get_wtime() - taskStart;
+        return;
+    }
+
     thread_local std::vector<double> flowReductions;
     flowReductions.assign(destination->pathSet.size(), 0.0);
     for (std::size_t index = 0; index < destination->pathSet.size(); ++index)
@@ -506,7 +544,8 @@ void TAP_PBCD::AdjustOneOD(
             flowReduction);
     }
     destination->shiftFlow = result.maximumPathFlowShift;
-    if (result.maximumPathFlowShift <= maximumODGap)
+    if (m_odScreeningMode == PBCDODScreeningMode::MaximumGPFlowShift
+        && result.maximumPathFlowShift <= maximumODGap)
     {
         result.taskSeconds = omp_get_wtime() - taskStart;
         return;
@@ -778,6 +817,7 @@ void TAP_PBCD::MainLoop()
         const bool fullCheck = inner % m_fullCheckFrequency == 0;
         const std::vector<std::size_t>& inputODs = fullCheck ? allODs : restricted;
         if (inputODs.empty()) break;
+        const std::size_t inputODCount = inputODs.size();
         const double shifted = AdjustODSet(
             inputODs,
             selectionThreshold,
@@ -789,6 +829,17 @@ void TAP_PBCD::MainLoop()
             maximumRestrictedODs,
             nextRestricted.size());
         restricted.swap(nextRestricted);
+        if (m_traceInner)
+        {
+            std::cerr << std::setprecision(17)
+                      << "PBCD_INNER outer=" << curIter
+                      << " inner=" << (inner + 1)
+                      << " full_check=" << (fullCheck ? 1 : 0)
+                      << " input_ods=" << inputODCount
+                      << " restricted_ods=" << restricted.size()
+                      << " total_absolute_path_flow_change=" << shifted
+                      << std::endl;
+        }
         if (restricted.empty()
             || shifted < kInnerShiftTolerance)
             break;
@@ -831,8 +882,8 @@ bool TAP_PBCD::WriteSolutionJson(const std::string& path, double wallSeconds) co
     output << std::setprecision(17);
     output << "{\n"
            << "  \"instance\": \"" << JsonEscape(inFileName) << "\",\n"
-           << "  \"method\": \"chen2020_pbcd\",\n"
-           << "  \"implementation\": {\"version\": \"chen2020_cpu-pbcd-v2\", "
+           << "  \"method\": \"chen2020_pbcd_rgod\",\n"
+           << "  \"implementation\": {\"version\": \"chen2020_cpu-pbcd-rgod-v1\", "
            << "\"compiler\": \"" << JsonEscape(__VERSION__) << "\", "
            << "\"cplusplus\": " << __cplusplus
 #ifdef _OPENMP
@@ -892,7 +943,11 @@ bool TAP_PBCD::WriteSolutionJson(const std::string& path, double wallSeconds) co
            << ", \"od_per_block\": " << m_odPerBlock
            << ", \"max_inner_iterations\": " << m_maxInnerIterations
            << ", \"full_check_frequency\": " << m_fullCheckFrequency
-           << ", \"restricted_od_metric\": \"maximum_gp_path_flow_shift\""
+           << ", \"restricted_od_metric\": \""
+           << (m_odScreeningMode == PBCDODScreeningMode::RelativeGap
+               ? "od_relative_gap"
+               : "maximum_gp_path_flow_shift")
+           << "\""
            << ", \"uniform_bpr\": " << (m_overrideBPR ? "true" : "false")
            << ", \"bpr_alpha\": " << m_bprAlpha
            << ", \"bpr_beta\": " << m_bprBeta << "},\n"

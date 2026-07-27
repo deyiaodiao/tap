@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.16)
-project(chen2020_cpu LANGUAGES CXX)
+project(pbcd_rgod LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -39,6 +39,10 @@ if(BUILD_TESTING)
     add_executable(pbcd_block_test tests/pbcd_block_test.cpp)
     target_link_libraries(pbcd_block_test PRIVATE chen2020_core)
     add_test(NAME pbcd_block_test COMMAND pbcd_block_test)
+
+    add_executable(pbcd_rgod_test tests/pbcd_rgod_test.cpp)
+    target_link_libraries(pbcd_rgod_test PRIVATE chen2020_core)
+    add_test(NAME pbcd_rgod_test COMMAND pbcd_rgod_test)
 
     add_executable(tntp_sparse_origin_test tests/tntp_sparse_origin_test.cpp)
     target_link_libraries(tntp_sparse_origin_test PRIVATE chen2020_core)

@@ -1,45 +1,57 @@
 {
-  "freeze_id": "chen2020-pbcd-20260717",
-  "frozen_at": "2026-07-17T12:35:37+08:00",
+  "freeze_id": "pbcd-rgod-baseline-v2",
+  "frozen_at": "2026-07-27T00:00:00+08:00",
   "status": "frozen_read_only_algorithm_baseline",
+  "supersedes": {
+    "freeze_id": "chen2020-pbcd-20260717",
+    "public_git_commit": "9ac47ce59b291cdf699d718c10dc9689fae15c69",
+    "binary_sha256": "f7d5954e35fe4c5cb28acbef08e57adbe8366da054595833e73ef29fee56cb87",
+    "reason": "The former restricted-OD test used maximum GP flow shift instead of the OD relative gap stated in Chen et al. Fig. 2."
+  },
+  "algorithm": {
+    "od_screening_default": "relative-gap",
+    "paper_rule": "RG_od >= maxODGap",
+    "baseline_gp_step": 0.25,
+    "source_legacy_default_gp_step": 0.3,
+    "legacy_mode_retained": "flow-shift",
+    "legacy_mode_status": "diagnostic_only"
+  },
+  "public_source_tree": {
+    "scope": "CMakeLists.txt, src/**, include/**, tests/*.cpp",
+    "file_count": 35,
+    "bytes": 254902,
+    "manifest_sha256": "df393380aacd8bfb25e1dbabb62dcd91a20ca340c947918ee31d6ba011fe2bb2"
+  },
+  "reference_build": {
+    "environment": "WSL2 Ubuntu 24.04, GCC/OpenMP, Release",
+    "binary_relative_path": "pbcd_rgod/build/bin/chen2020_ue",
+    "binary_sha256": "3c540fffe022719ad6284a86d7684229674191cefb65e34c176bf6fbc0a1399a",
+    "binary_included_in_repository": false
+  },
   "publication_copy": {
-    "added": [
+    "excluded": [
+      "build/**",
+      "network data",
+      "large raw results",
+      "workspace-boundary tests"
+    ],
+    "linux_forwarding_headers": [
       "include/newran.h",
       "include/include.h",
       "include/boolean.h",
       "include/myexcept.h",
       "include/extreal.h",
       "include/randlib/tnm_header.h"
+    ]
+  },
+  "accuracy_protocol": {
+    "relative_path": "configs/pbcd_rgod_baseline_v2.json",
+    "networks": [
+      "Winnipeg",
+      "Birmingham",
+      "Philadelphia"
     ],
-    "added_reason": "Case-sensitive Linux forwarding headers for frozen uppercase NEWRAN filenames; no frozen file was modified.",
-    "excluded": [
-      "build/**",
-      "**/__pycache__/**",
-      "**/*.pyc",
-      "tests/test_source_boundary.py"
-    ],
-    "reason": "Exclude local build artifacts and an internal workspace-boundary test that requires the non-public frozen Greedy tree."
-  },
-  "algorithm_core_tree": {
-    "scope": "The 28 canonical files: CMakeLists.txt, src/**, frozen include/**, tests/*.cpp; excludes the six publication-only forwarding headers",
-    "file_count": 28,
-    "bytes": 250447,
-    "sha256": "8186fcc475e7eed8df8fa7b4dace592badd51ad41fcbc28ec140a826288321eb",
-    "canonical_and_publication_copy_match": true
-  },
-  "canonical_source_tree": {
-    "scope": "original chen2020_cpu excluding build, __pycache__, and pyc",
-    "file_count": 30,
-    "bytes": 254568,
-    "sha256": "658e3a2dfc334121cc1225b1046da28e85fb191da841ecc137c46bbd5fba0cb9"
-  },
-  "frozen_binary": {
-    "relative_path": "build/bin/chen2020_ue",
-    "sha256": "f7d5954e35fe4c5cb28acbef08e57adbe8366da054595833e73ef29fee56cb87",
-    "included_in_repository": false
-  },
-  "formal_protocol": {
-    "id": "chen2020-formal-v1",
-    "sha256": "cd66b057940760121c395c721977b78afc49eb45d3bc815099054250cd30690b"
+    "independent_link_flow_validation_passed": true,
+    "per_od_path_validation": "not repeated for every network in this freeze"
   }
 }
